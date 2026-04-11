@@ -1,0 +1,7 @@
+refresh_data:
+  name: Refresh Data
+  description: >
+    Force an immediate refresh of all NED Energy sensors from the NED API,
+    bypassing the normal polling interval. Useful in automations or scripts
+    where up-to-date grid statistics are needed on demand.
+  fields: {}

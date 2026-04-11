@@ -1,0 +1,41 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Verbind met NED Energy",
+        "description": "Voer je NED API-sleutel in. Je kunt er een aanvragen op https://ned.nl.\n\nVerversingsinterval: hoe vaak de sensoren worden bijgewerkt (seconden). Min: {min_interval}s, max: {max_interval}s, standaard: {default_interval}s.",
+        "data": {
+          "api_key": "API-sleutel",
+          "scan_interval": "Verversingsinterval (seconden)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "NED Energy opnieuw verifiëren",
+        "description": "Je NED API-sleutel is niet meer geldig. Voer een nieuwe sleutel in.",
+        "data": {
+          "api_key": "API-sleutel"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Ongeldige API-sleutel — controleer de sleutel en probeer het opnieuw.",
+      "cannot_connect": "Verbinding met de NED API mislukt. Controleer je netwerk en probeer het opnieuw.",
+      "unknown": "Er is een onverwachte fout opgetreden."
+    },
+    "abort": {
+      "already_configured": "NED Energy is al geconfigureerd.",
+      "reauth_successful": "Herverificatie is geslaagd."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "NED Energy opties",
+        "description": "Pas aan hoe vaak de sensoren worden bijgewerkt. Min: {min_interval}s, max: {max_interval}s.",
+        "data": {
+          "scan_interval": "Verversingsinterval (seconden)"
+        }
+      }
+    }
+  }
+}

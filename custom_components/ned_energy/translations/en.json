@@ -1,0 +1,41 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to NED Energy",
+        "description": "Enter your NED API key. You can request one at https://ned.nl.\n\nUpdate interval: how often sensors are refreshed (seconds). Min: {min_interval}s, max: {max_interval}s, default: {default_interval}s.",
+        "data": {
+          "api_key": "API Key",
+          "scan_interval": "Update Interval (seconds)"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate NED Energy",
+        "description": "Your NED API key is no longer valid. Please enter a new one.",
+        "data": {
+          "api_key": "API Key"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid API key — please check and try again.",
+      "cannot_connect": "Failed to connect to the NED API. Please check your network and try again.",
+      "unknown": "An unexpected error occurred."
+    },
+    "abort": {
+      "already_configured": "NED Energy is already configured.",
+      "reauth_successful": "Re-authentication was successful."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "NED Energy Options",
+        "description": "Adjust how often sensors are refreshed. Min: {min_interval}s, max: {max_interval}s.",
+        "data": {
+          "scan_interval": "Update Interval (seconds)"
+        }
+      }
+    }
+  }
+}
