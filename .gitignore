@@ -9,3 +9,18 @@ __pycache__/
 instance/
 .DS_Store
 .vscode/settings.json
+
+# tooling caches
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+
+# test coverage
+.coverage
+coverage.xml
+htmlcov/
+
+# build / packaging
+dist/
+build/
+*.egg-info/
