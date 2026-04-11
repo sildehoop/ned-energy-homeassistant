@@ -1,0 +1,11 @@
+{
+  "folders": [
+    {
+      "name": "NED Energy Integration",
+      "path": "."
+    }
+  ],
+  "settings": {
+    "python.defaultInterpreterPath": ".venv/bin/python"
+  }
+}

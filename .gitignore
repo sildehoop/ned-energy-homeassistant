@@ -1,3 +1,4 @@
+ha-dev/
 __pycache__/
 *.pyc
 *.pyo
@@ -7,3 +8,4 @@ __pycache__/
 .homeassistant/
 instance/
 .DS_Store
+.vscode/settings.json
