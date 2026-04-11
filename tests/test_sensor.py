@@ -1,39 +1,37 @@
 """Tests for NED Energy sensor entities (sensor.py)."""
+
 from __future__ import annotations
 
 from unittest.mock import MagicMock
 
-import pytest
-
-from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
-from homeassistant.const import PERCENTAGE, UnitOfEnergy
-
-from custom_components.ned_energy.coordinator import NedEnergyData
 from custom_components.ned_energy.const import (
     DOMAIN,
     SENSOR_CONSUMPTION,
     SENSOR_EXPORT,
-    SENSOR_FOSSIL_PRODUCTION,
     SENSOR_IMPORT,
     SENSOR_RENEWABLE_PERCENTAGE,
     SENSOR_SOLAR_PRODUCTION,
     SENSOR_TOTAL_PRODUCTION,
-    SENSOR_WIND_PRODUCTION,
 )
+from custom_components.ned_energy.coordinator import NedEnergyData
 from custom_components.ned_energy.sensor import (
     SENSOR_DESCRIPTIONS,
     NedEnergySensor,
     NedSensorEntityDescription,
 )
+from homeassistant.components.sensor import SensorDeviceClass, SensorStateClass
+from homeassistant.const import PERCENTAGE, UnitOfEnergy
 
-from .conftest import ENERGY_MIX_DATA, ENTRY_ID, mock_config_entry
+from .conftest import ENERGY_MIX_DATA, ENTRY_ID
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
 
-def make_coordinator(data: NedEnergyData | None = None, success: bool = True) -> MagicMock:
+def make_coordinator(
+    data: NedEnergyData | None = None, success: bool = True
+) -> MagicMock:
     coord = MagicMock()
     coord.data = data
     coord.last_update_success = success
@@ -90,7 +88,9 @@ class TestSensorDescriptions:
                 )
 
     def test_renewable_percentage_uses_percent_unit(self) -> None:
-        desc = next(d for d in SENSOR_DESCRIPTIONS if d.key == "ned_renewable_percentage")
+        desc = next(
+            d for d in SENSOR_DESCRIPTIONS if d.key == "ned_renewable_percentage"
+        )
         assert desc.native_unit_of_measurement == PERCENTAGE
 
     def test_energy_sensors_have_energy_device_class(self) -> None:

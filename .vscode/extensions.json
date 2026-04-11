@@ -2,7 +2,8 @@
   "recommendations": [
     "ms-python.python",
     "ms-python.debugpy",
-    "ms-python.black-formatter",
+    "charliermarsh.ruff",
+    "ms-python.vscode-pylance",
     "visualstudioexptteam.vscodeintellicode"
   ]
 }

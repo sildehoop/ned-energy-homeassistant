@@ -1,4 +1,5 @@
 """Config flow for the NED Energy integration."""
+
 from __future__ import annotations
 
 from typing import Any
@@ -6,7 +7,6 @@ from typing import Any
 import aiohttp
 import voluptuous as vol
 
-from homeassistant.helpers.selector import TextSelector, TextSelectorConfig, TextSelectorType
 from homeassistant.config_entries import (
     ConfigEntry,
     ConfigFlow,
@@ -15,6 +15,11 @@ from homeassistant.config_entries import (
 )
 from homeassistant.core import callback
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
+from homeassistant.helpers.selector import (
+    TextSelector,
+    TextSelectorConfig,
+    TextSelectorType,
+)
 
 from .api import NedAuthError, NedConnectionError, NedEnergyApiClient
 from .const import (
@@ -122,9 +127,7 @@ class NedEnergyConfigFlow(ConfigFlow, domain=DOMAIN):
     # Step: reauth
     # ------------------------------------------------------------------
 
-    async def async_step_reauth(
-        self, entry_data: dict[str, Any]
-    ) -> ConfigFlowResult:
+    async def async_step_reauth(self, entry_data: dict[str, Any]) -> ConfigFlowResult:
         """Entry point for re-authentication triggered by ConfigEntryAuthFailed."""
         return await self.async_step_reauth_confirm()
 
@@ -148,11 +151,13 @@ class NedEnergyConfigFlow(ConfigFlow, domain=DOMAIN):
 
         return self.async_show_form(
             step_id="reauth_confirm",
-            data_schema=vol.Schema({
-                vol.Required(CONF_API_KEY): TextSelector(
-                    TextSelectorConfig(type=TextSelectorType.PASSWORD)
-                ),
-            }),
+            data_schema=vol.Schema(
+                {
+                    vol.Required(CONF_API_KEY): TextSelector(
+                        TextSelectorConfig(type=TextSelectorType.PASSWORD)
+                    ),
+                }
+            ),
             errors=errors,
         )
 
@@ -203,6 +208,7 @@ class NedEnergyOptionsFlow(OptionsFlow):
     """Allow the user to change the update interval after initial setup."""
 
     def __init__(self, config_entry: ConfigEntry) -> None:
+        """Store the current interval so the form can pre-fill it."""
         self._current_interval: int = config_entry.options.get(
             CONF_SCAN_INTERVAL, _DEFAULT_INTERVAL_SECONDS
         )

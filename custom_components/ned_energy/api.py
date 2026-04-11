@@ -1,8 +1,9 @@
 """Async API client for the NED (Nationaal Energiedashboard) API."""
+
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from http import HTTPStatus
 from typing import Any
 
@@ -79,6 +80,7 @@ class NedEnergyApiClient:
     """
 
     def __init__(self, api_key: str, session: aiohttp.ClientSession) -> None:
+        """Initialise with an API key and a shared aiohttp session."""
         self._api_key = api_key
         self._session = session
 
@@ -105,8 +107,8 @@ class NedEnergyApiClient:
                 if response.status in (401, 403):
                     return False
                 return response.status == 200
-        except (TimeoutError, aiohttp.ClientError):
-            raise NedConnectionError("Connection error during auth validation")
+        except (TimeoutError, aiohttp.ClientError) as err:
+            raise NedConnectionError("Connection error during auth validation") from err
 
     # ------------------------------------------------------------------
     # Domain-level public methods
@@ -149,11 +151,10 @@ class NedEnergyApiClient:
         return await self._fetch_multi(queries)
 
     async def get_energy_mix(self) -> EnergyMixData:
-        """Return a combined snapshot of production, consumption, import/export,
-        and a derived renewable percentage.
+        """Return a combined snapshot of production, consumption, import/export.
 
-        This is the main method used by the coordinator's
-        ``_async_update_data``.
+        Includes a derived renewable percentage. This is the main method used
+        by the coordinator's ``_async_update_data``.
         """
         production, consumption, import_export = await asyncio.gather(
             self.get_production(),
@@ -177,7 +178,9 @@ class NedEnergyApiClient:
     ) -> dict[str, float | None]:
         """Fetch multiple utilization queries in parallel."""
 
-        async def _fetch_one(sensor_key: str, activity_type: int, activity: int) -> tuple[str, float | None]:
+        async def _fetch_one(
+            sensor_key: str, activity_type: int, activity: int
+        ) -> tuple[str, float | None]:
             try:
                 members = await self._fetch_utilization(
                     point=POINT_NETHERLANDS,
@@ -202,7 +205,7 @@ class NedEnergyApiClient:
         items_per_page: int = 1,
     ) -> list[dict[str, Any]]:
         """Perform a GET /utilizations request and return the member list."""
-        now = datetime.now(tz=timezone.utc)
+        now = datetime.now(tz=UTC)
         yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
         tomorrow = (now + timedelta(days=1)).strftime("%Y-%m-%d")
         params: dict[str, Any] = {

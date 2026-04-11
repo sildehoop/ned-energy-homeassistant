@@ -1,4 +1,5 @@
 """The NED Energy integration."""
+
 from __future__ import annotations
 
 from homeassistant.config_entries import ConfigEntry
@@ -98,7 +99,5 @@ async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> Non
     rebuilds the coordinator with the updated update_interval so the change
     takes effect immediately.
     """
-    LOGGER.debug(
-        "NED Energy options updated for entry %s — reloading", entry.entry_id
-    )
+    LOGGER.debug("NED Energy options updated for entry %s — reloading", entry.entry_id)
     await hass.config_entries.async_reload(entry.entry_id)

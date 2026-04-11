@@ -1,11 +1,10 @@
 """Sensor platform for the NED Energy integration."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 from homeassistant.components.sensor import (
-    SensorDeviceClass,
     SensorEntity,
     SensorEntityDescription,
     SensorStateClass,
@@ -29,7 +28,7 @@ from .const import (
     SENSOR_TOTAL_PRODUCTION,
     SENSOR_WIND_PRODUCTION,
 )
-from .coordinator import NedEnergyCoordinator, NedEnergyData
+from .coordinator import NedEnergyCoordinator
 
 # ---------------------------------------------------------------------------
 # Entity description
@@ -183,6 +182,7 @@ class NedEnergySensor(CoordinatorEntity[NedEnergyCoordinator], SensorEntity):
         entry: ConfigEntry,
         description: NedSensorEntityDescription,
     ) -> None:
+        """Initialise sensor with coordinator, config entry and entity description."""
         super().__init__(coordinator)
         self.entity_description = description
 
@@ -217,4 +217,6 @@ class NedEnergySensor(CoordinatorEntity[NedEnergyCoordinator], SensorEntity):
     @property
     def available(self) -> bool:
         """Mark the entity unavailable while the coordinator has no data."""
-        return self.coordinator.last_update_success and self.coordinator.data is not None
+        return (
+            self.coordinator.last_update_success and self.coordinator.data is not None
+        )

@@ -1,4 +1,5 @@
 """Tests for NedEnergyCoordinator (coordinator.py)."""
+
 from __future__ import annotations
 
 from datetime import timedelta
@@ -6,15 +7,11 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from homeassistant.exceptions import ConfigEntryAuthFailed
-from homeassistant.helpers.update_coordinator import UpdateFailed
-
 from custom_components.ned_energy.api import (
     NedApiError,
     NedAuthError,
     NedConnectionError,
 )
-from custom_components.ned_energy.coordinator import NedEnergyCoordinator, NedEnergyData
 from custom_components.ned_energy.const import (
     SENSOR_CONSUMPTION,
     SENSOR_EXPORT,
@@ -25,13 +22,15 @@ from custom_components.ned_energy.const import (
     SENSOR_TOTAL_PRODUCTION,
     SENSOR_WIND_PRODUCTION,
 )
+from custom_components.ned_energy.coordinator import NedEnergyCoordinator, NedEnergyData
+from homeassistant.exceptions import ConfigEntryAuthFailed
+from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .conftest import (
     CONSUMPTION_DATA,
     ENERGY_MIX_DATA,
     IMPORT_EXPORT_DATA,
     PRODUCTION_DATA,
-    mock_config_entry,
 )
 
 # ---------------------------------------------------------------------------
@@ -215,9 +214,7 @@ class TestAsyncUpdateDataErrors:
     async def test_api_error_raises_update_failed(
         self, mock_hass: MagicMock, mock_client: MagicMock, mock_config_entry: MagicMock
     ) -> None:
-        mock_client.get_production = AsyncMock(
-            side_effect=NedApiError("HTTP 503")
-        )
+        mock_client.get_production = AsyncMock(side_effect=NedApiError("HTTP 503"))
         coord = make_coordinator(mock_hass, mock_client, mock_config_entry)
 
         with pytest.raises(UpdateFailed, match="NED API error"):

@@ -1,9 +1,11 @@
 """Tests for NED Energy API client (api.py)."""
+
 from __future__ import annotations
 
 from http import HTTPStatus
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
+import aiohttp
 import pytest
 
 from custom_components.ned_energy.api import (
@@ -28,7 +30,6 @@ from custom_components.ned_energy.const import (
 from .conftest import (
     API_KEY,
     CONSUMPTION_DATA,
-    ENERGY_MIX_DATA,
     IMPORT_EXPORT_DATA,
     PRODUCTION_DATA,
     empty_utilization_response,
@@ -118,7 +119,9 @@ class TestValidateAuth:
     async def test_returns_false_on_401(self) -> None:
         session = MagicMock()
         session.get = MagicMock(
-            return_value=make_mock_response(HTTPStatus.UNAUTHORIZED, text_data="Unauthorized")
+            return_value=make_mock_response(
+                HTTPStatus.UNAUTHORIZED, text_data="Unauthorized"
+            )
         )
         client = make_client(session)
         assert await client.async_validate_auth() is False
@@ -282,14 +285,14 @@ class TestHttpErrors:
     async def test_401_raises_ned_auth_error(self) -> None:
         session = MagicMock()
         session.get = MagicMock(
-            return_value=make_mock_response(HTTPStatus.UNAUTHORIZED, text_data="Unauthorized")
+            return_value=make_mock_response(
+                HTTPStatus.UNAUTHORIZED, text_data="Unauthorized"
+            )
         )
         client = make_client(session)
 
         with pytest.raises(NedAuthError):
-            await client._fetch_utilization(
-                point=0, activity_type=1, activity=1
-            )
+            await client._fetch_utilization(point=0, activity_type=1, activity=1)
 
     @pytest.mark.asyncio
     async def test_403_raises_ned_auth_error(self) -> None:
@@ -300,9 +303,7 @@ class TestHttpErrors:
         client = make_client(session)
 
         with pytest.raises(NedAuthError):
-            await client._fetch_utilization(
-                point=0, activity_type=1, activity=1
-            )
+            await client._fetch_utilization(point=0, activity_type=1, activity=1)
 
     @pytest.mark.asyncio
     async def test_500_raises_ned_api_error(self) -> None:
@@ -313,32 +314,22 @@ class TestHttpErrors:
         client = make_client(session)
 
         with pytest.raises(NedApiError):
-            await client._fetch_utilization(
-                point=0, activity_type=1, activity=1
-            )
+            await client._fetch_utilization(point=0, activity_type=1, activity=1)
 
     @pytest.mark.asyncio
     async def test_timeout_raises_ned_connection_error(self) -> None:
-        import aiohttp
-
         session = MagicMock()
         session.get = MagicMock(side_effect=aiohttp.ServerTimeoutError())
         client = make_client(session)
 
         with pytest.raises(NedConnectionError):
-            await client._fetch_utilization(
-                point=0, activity_type=1, activity=1
-            )
+            await client._fetch_utilization(point=0, activity_type=1, activity=1)
 
     @pytest.mark.asyncio
     async def test_client_error_raises_ned_connection_error(self) -> None:
-        import aiohttp
-
         session = MagicMock()
         session.get = MagicMock(side_effect=aiohttp.ClientConnectionError("refused"))
         client = make_client(session)
 
         with pytest.raises(NedConnectionError):
-            await client._fetch_utilization(
-                point=0, activity_type=1, activity=1
-            )
+            await client._fetch_utilization(point=0, activity_type=1, activity=1)

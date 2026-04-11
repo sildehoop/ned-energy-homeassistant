@@ -1,9 +1,9 @@
 """Shared pytest fixtures for the NED Energy integration tests."""
+
 from __future__ import annotations
 
-from collections.abc import Generator
 from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 

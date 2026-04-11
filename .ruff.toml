@@ -1,0 +1,30 @@
+target-version = "py313"
+
+lint.select = [
+  "B002", "B007", "B014", "B023", "B904",
+  "C", "D", "E", "F", "G", "I", "ISC",
+  "N804", "N805", "N815",
+  "PERF", "PIE", "PL", "PT",
+  "RUF005", "RUF006",
+  "S102", "S108", "S307",
+  "SIM", "T20", "TRY004", "UP", "W",
+]
+
+lint.ignore = [
+  "D202", "D203", "D213", "E501", "E731",
+  "PLR0911", "PLR0912", "PLR0913", "PLR0915", "PLR2004",
+  "SIM102", "SIM108", "UP006", "UP007",
+  "W191", "E111", "E114", "E117",
+  "COM812", "COM819", "ISC001",
+]
+
+[lint.isort]
+force-sort-within-sections = true
+known-first-party = ["homeassistant"]
+combine-as-imports = true
+
+[lint.mccabe]
+max-complexity = 25
+
+[lint.per-file-ignores]
+"tests/**" = ["D"]

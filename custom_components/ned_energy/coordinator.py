@@ -1,4 +1,5 @@
 """DataUpdateCoordinator for the NED Energy integration."""
+
 from __future__ import annotations
 
 from datetime import timedelta
@@ -9,11 +10,11 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import (
+    EnergyMixData,
     NedApiError,
     NedAuthError,
     NedConnectionError,
     NedEnergyApiClient,
-    EnergyMixData,
 )
 from .const import (
     CONF_SCAN_INTERVAL,
@@ -42,6 +43,7 @@ class NedEnergyCoordinator(DataUpdateCoordinator[NedEnergyData]):
         client: NedEnergyApiClient,
         entry: ConfigEntry,
     ) -> None:
+        """Initialise the coordinator with the HA instance, API client and config entry."""
         interval = timedelta(
             seconds=entry.options.get(
                 CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL.total_seconds()

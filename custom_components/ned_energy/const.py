@@ -1,8 +1,9 @@
 """Constants for the NED Energy integration."""
+
 from __future__ import annotations
 
-import logging
 from datetime import timedelta
+import logging
 
 DOMAIN = "ned_energy"
 NAME = "NED Energy"
@@ -18,7 +19,7 @@ CONF_SCAN_INTERVAL = "scan_interval"
 API_BASE_URL = "https://api.ned.nl/v1"
 
 DEFAULT_SCAN_INTERVAL = timedelta(seconds=300)  # 5 minutes
-MIN_SCAN_INTERVAL = timedelta(seconds=60)   # NED API rate-limit floor
+MIN_SCAN_INTERVAL = timedelta(seconds=60)  # NED API rate-limit floor
 MAX_SCAN_INTERVAL = timedelta(seconds=3600)  # 1 hour ceiling
 
 # NED API point — all sensors use point=0 (Netherlands total)
@@ -28,9 +29,9 @@ POINT_NETHERLANDS = 0
 TYPE_ALL = 0
 TYPE_WIND = 1
 TYPE_SOLAR = 2
-TYPE_FOSSIL_GAS = 18       # FossilGasPower
+TYPE_FOSSIL_GAS = 18  # FossilGasPower
 TYPE_ELECTRICITY_MIX = 27  # ElectricityMix (import/export)
-TYPE_ELECTRICITY_LOAD = 59 # Electricityload (consumption)
+TYPE_ELECTRICITY_LOAD = 59  # Electricityload (consumption)
 
 # NED API activity values
 ACTIVITY_PROVIDING = 1
