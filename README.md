@@ -1,31 +1,32 @@
 # NED Energy — Home Assistant Integration
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![HA Version](https://img.shields.io/badge/Home%20Assistant-2024.1%2B-blue.svg)](https://www.home-assistant.io/)
+[![HA Version](https://img.shields.io/badge/Home%20Assistant-2024.1%2B-41BDF5.svg)](https://www.home-assistant.io/)
+[![GitHub release](https://img.shields.io/github/v/release/sildehoop/ned-energy-homeassistant?include_prereleases&color=41BDF5)](https://github.com/sildehoop/ned-energy-homeassistant/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![GitHub release](https://img.shields.io/github/v/release/your-username/ned-energy?include_prereleases)](https://github.com/your-username/ned-energy/releases)
+[![GitHub issues](https://img.shields.io/github/issues/sildehoop/ned-energy-homeassistant)](https://github.com/sildehoop/ned-energy-homeassistant/issues)
 
-A custom Home Assistant integration that exposes **Dutch national electricity grid statistics** from the [Nationaal Energiedashboard (NED)](https://ned.nl) as real-time sensors.
+A custom Home Assistant integration that exposes **Dutch national electricity grid statistics** from the [Nationaal Energiedashboard (NED)](https://ned.nl) as live sensors — solar output, wind generation, fossil gas, cross-border flows, and the real-time renewable share of the entire Dutch grid.
 
 ---
 
 ## Overview
 
-The NED Energy integration connects Home Assistant to the official `api.ned.nl` API, polling live grid data for the Netherlands every 5 minutes (configurable). All sensors update together under a single device entry and are immediately available for dashboards, automations, and the Home Assistant Energy panel.
+The NED Energy integration connects Home Assistant to `api.ned.nl`, the official Dutch national energy dashboard operated by Netbeheer Nederland, TenneT, and Gasunie. It polls live grid data every 5 minutes (configurable) and exposes 8 sensors under a single device entry, ready for dashboards, automations, and the Home Assistant Energy panel.
 
-> **Data source:** [ned.nl](https://ned.nl) — the official Dutch national energy dashboard, operated by Netbeheer Nederland, TenneT, and Gasunie.
+**No local dependencies.** The integration uses only libraries already bundled with Home Assistant.
 
 ---
 
 ## Features
 
-- **8 real-time sensors** covering production, consumption, cross-border flows, and renewable mix
-- **Configurable update interval** (60 s – 3600 s) via the UI Options flow
-- **Automatic re-authentication** — HA notifies you when an API key expires
-- **Cloud polling** `iot_class` with graceful degradation: sensors show *unavailable* instead of stale data on API failures
-- **Single config entry** — no duplicate setup possible
-- **`ned_energy.refresh_data` service** — force an on-demand poll from automations or scripts
-- **Zero Python dependencies** beyond what Home Assistant already ships
+- **8 real-time sensors** — production by source, national consumption, cross-border flows, and renewable share
+- **Config UI** — fully set up through the Home Assistant interface, no YAML required
+- **Configurable update interval** — 60 s to 3600 s, adjustable without restart
+- **On-demand refresh** — `ned_energy.refresh_data` service for use in automations and scripts
+- **Re-authentication flow** — Home Assistant notifies you when an API key expires; re-enter a new key without losing any configuration
+- **Graceful degradation** — sensors become `unavailable` on API errors instead of showing stale data
+- **Single config entry** — the UI prevents duplicate setup
 
 ---
 
@@ -34,16 +35,18 @@ The NED Energy integration connects Home Assistant to the official `api.ned.nl` 
 ### Option A — HACS (recommended)
 
 1. Open **HACS → Integrations** in your Home Assistant instance.
-2. Click the three-dot menu → **Custom repositories**.
-3. Add `https://github.com/your-username/ned-energy` with category **Integration**.
+2. Click the three-dot menu **⋮ → Custom repositories**.
+3. Add the URL below with category **Integration**:
+   ```
+   https://github.com/sildehoop/ned-energy-homeassistant
+   ```
 4. Search for **NED Energy** and click **Download**.
 5. Restart Home Assistant.
 
 ### Option B — Manual
 
-1. Download or clone this repository.
-2. Copy the `custom_components/ned_energy/` folder into your Home Assistant `config/custom_components/` directory:
-
+1. Download the [latest release](https://github.com/sildehoop/ned-energy-homeassistant/releases/latest) or clone this repository.
+2. Copy `custom_components/ned_energy/` into your Home Assistant configuration directory:
    ```
    config/
    └── custom_components/
@@ -58,41 +61,40 @@ The NED Energy integration connects Home Assistant to the official `api.ned.nl` 
            ├── services.yaml
            └── strings.json
    ```
-
 3. Restart Home Assistant.
 
 ---
 
 ## Configuration
 
-### 1. Get an API key
+### 1. Get a free API key
 
-Register for a free API key at [ned.nl](https://ned.nl). The API is provided free of charge for non-commercial use.
+Register at [ned.nl](https://ned.nl) to obtain a free API key. The API is available free of charge for non-commercial use.
 
 ### 2. Add the integration
 
 1. Go to **Settings → Devices & Services → Add Integration**.
 2. Search for **NED Energy**.
-3. Enter your API key and optionally adjust the update interval (default: **300 seconds**).
-4. Click **Submit** — the integration will validate the key before saving.
+3. Enter your API key. Optionally set the update interval (default: **300 seconds**).
+4. Click **Submit** — the integration validates the key before saving.
 
-### Update interval
+### 3. Change the update interval (optional)
 
-The update interval can be changed after setup without restarting Home Assistant:
+You can adjust the polling interval at any time without restarting Home Assistant:
 
 1. Go to **Settings → Devices & Services → NED Energy → Configure**.
-2. Set a new interval between **60** and **3600** seconds.
-3. Save — the coordinator restarts automatically with the new interval.
+2. Enter a value between **60** and **3600** seconds.
+3. Save — the coordinator restarts automatically.
 
 ### Re-authentication
 
-If your API key is revoked or expires, Home Assistant will display a repair notification. Click **Re-authenticate** and enter a new key — no other configuration is lost.
+If your API key is revoked or expires, Home Assistant will show a repair notification. Click **Re-authenticate**, enter a new key, and all sensors resume — no other settings are changed.
 
 ---
 
 ## Sensors
 
-All sensors are grouped under a single **NED Energy** device. Energy values use hourly granularity from the NED API and are reported in **MWh**.
+All 8 sensors appear under a single **NED Energy** device. Values reflect hourly granularity from the NED API and are reported in **MWh**. All applicable sensors have `state_class: measurement` and `device_class: energy`, making them compatible with the HA statistics engine and long-term history graphs.
 
 | Entity ID | Name | Unit | Description |
 |---|---|---|---|
@@ -105,10 +107,9 @@ All sensors are grouped under a single **NED Energy** device. Energy values use 
 | `sensor.ned_export` | Energy Export | MWh | Cross-border electricity exports |
 | `sensor.ned_renewable_percentage` | Renewable Percentage | % | Share of solar + wind in total production |
 
-> All sensors have `state_class: measurement` and `device_class: energy` (where applicable), making them compatible with the Home Assistant statistics engine and long-term statistics graphs.
+### Dashboard examples
 
-### Example: Lovelace energy gauge
-
+**Gauge — live renewable share:**
 ```yaml
 type: gauge
 entity: sensor.ned_renewable_percentage
@@ -121,8 +122,7 @@ severity:
   red: 0
 ```
 
-### Example: Automation on high renewable share
-
+**Automation — notify when the grid is mostly renewable:**
 ```yaml
 automation:
   - alias: "Notify when grid is mostly renewable"
@@ -157,13 +157,15 @@ Useful in scripts or automations where you need guaranteed fresh data before act
 ### Requirements
 
 - Python 3.12+
-- Home Assistant development environment
+- Git
 
-### Setup
+### Local setup
 
 ```bash
-git clone https://github.com/your-username/ned-energy.git
-cd ned-energy
+git clone https://github.com/sildehoop/ned-energy-homeassistant.git
+cd ned-energy-homeassistant
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements-test.txt
 ```
 
@@ -178,7 +180,7 @@ Tests cover the API client, coordinator, and all sensor entities using mocked HT
 ```
 tests/
 ├── conftest.py          # shared fixtures and mock helpers
-├── test_api.py          # API client — HTTP responses, error handling, pure functions
+├── test_api.py          # API client — HTTP responses, error handling
 ├── test_coordinator.py  # DataUpdateCoordinator — data flow, error propagation
 └── test_sensor.py       # Sensor entities — values, availability, metadata
 ```
@@ -211,10 +213,14 @@ ConfigEntry
     │
     └─► NedEnergyCoordinator        # DataUpdateCoordinator — polls every N seconds
             │
-            └─► NedEnergyData       # Typed dataclass — structured snapshot
+            └─► NedEnergyData       # Typed dataclass — structured data snapshot
                     │
-                    └─► NedEnergySensor × 8    # CoordinatorEntity + SensorEntity
+                    └─► NedEnergySensor × 8   # CoordinatorEntity + SensorEntity
 ```
+
+### Contributing
+
+Bug reports and pull requests are welcome. Please open an [issue](https://github.com/sildehoop/ned-energy-homeassistant/issues) first for significant changes so we can discuss the approach.
 
 ---
 
@@ -222,13 +228,16 @@ ConfigEntry
 
 This integration uses the official **NED API** provided by [ned.nl](https://ned.nl).
 
-- **Base URL:** `https://api.ned.nl/v1`
-- **Authentication:** API key via `X-AUTH-TOKEN` header
-- **Endpoint used:** `GET /utilizations`
-- **Granularity:** hourly (`granularity=4`), actual data only (`classification=2`)
-- **Timezone:** `Europe/Amsterdam`
+| | |
+|---|---|
+| **Base URL** | `https://api.ned.nl/v1` |
+| **Authentication** | API key via `X-AUTH-TOKEN` header |
+| **Endpoint** | `GET /utilizations` |
+| **Granularity** | Hourly (`granularity=5`) |
+| **Data type** | Actual (`classification=2`) |
+| **Coverage** | Netherlands total (`point=0`) |
 
-API keys are available free of charge for non-commercial use by registering at [ned.nl](https://ned.nl). Usage is subject to the [NED terms of service](https://ned.nl).
+API keys are available free of charge for non-commercial use. Usage is subject to the [NED terms of service](https://ned.nl).
 
 ---
 
@@ -236,4 +245,4 @@ API keys are available free of charge for non-commercial use by registering at [
 
 This project is licensed under the **MIT License** — see the [LICENSE](LICENSE) file for details.
 
-This integration is an independent open source project and is not affiliated with, endorsed by, or supported by Netbeheer Nederland, TenneT, Gasunie, or the Nationaal Energiedashboard.
+> This integration is an independent open source project and is not affiliated with, endorsed by, or supported by Netbeheer Nederland, TenneT, Gasunie, or the Nationaal Energiedashboard.
