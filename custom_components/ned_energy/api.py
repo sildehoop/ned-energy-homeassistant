@@ -207,7 +207,12 @@ class NedEnergyApiClient:
         """Perform a GET /utilizations request and return the member list."""
         now = datetime.now(tz=UTC)
         yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-        tomorrow = (now + timedelta(days=1)).strftime("%Y-%m-%d")
+        # Exclude the current running hour: near-realtime data is continuously
+        # revised within the hour, causing oscillation if we fetch it mid-hour.
+        # By capping strictly_before at the start of the current hour we always
+        # return the most recent *completed* hour whose value is stable.
+        # UTC is used explicitly so the boundary is correct regardless of DST.
+        current_hour = now.replace(minute=0, second=0, microsecond=0)
         params: dict[str, Any] = {
             "point": point,
             "type": activity_type,
@@ -216,7 +221,7 @@ class NedEnergyApiClient:
             "granularitytimezone": GRANULARITY_TIMEZONE,
             "classification": 2,  # actual data, not forecast
             "validfrom[after]": yesterday,
-            "validfrom[strictly_before]": tomorrow,
+            "validfrom[strictly_before]": current_hour.isoformat(),
             "itemsPerPage": items_per_page,
             "order[validfrom]": "desc",
         }

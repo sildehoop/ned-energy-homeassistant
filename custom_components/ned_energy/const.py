@@ -25,9 +25,9 @@ MAX_SCAN_INTERVAL = timedelta(seconds=3600)  # 1 hour ceiling
 # NED API point — all sensors use point=0 (Netherlands total)
 POINT_NETHERLANDS = 0
 
-# NED API type values (verified working with this API key)
+# NED API type values
 TYPE_ALL = 0
-TYPE_WIND = 1
+TYPE_WIND = 1  # Wind — verify whether this includes offshore (type 17/22)
 TYPE_SOLAR = 2
 TYPE_FOSSIL_GAS = 18  # FossilGasPower
 TYPE_ELECTRICITY_MIX = 27  # ElectricityMix (import/export)
@@ -41,10 +41,11 @@ ACTIVITY_EXPORT = 4
 
 # NED API granularity values (per API docs)
 # 3=10min, 4=15min, 5=Hour, 6=Day, 7=Month, 8=Year
+# Note: day/month/year aggregations only return data for granularitytimezone=1 (CET).
 GRANULARITY_HOUR = 5
-GRANULARITY_15MIN = 4
 
 # NED API granularitytimezone values: 0=UTC, 1=CET (Amsterdam)
+# Hourly data works with UTC (0). Daily/monthly/yearly REQUIRE CET (1).
 GRANULARITY_TIMEZONE = 0
 
 # Sensor keys — used as unique_id suffixes and coordinator data keys

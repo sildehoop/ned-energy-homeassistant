@@ -20,6 +20,7 @@
   - [Point](#point)
   - [Type](#type)
   - [Validfrom](#validfrom)
+  - [Paginering en sortering](#paginering-en-sortering)
 - [Bestandsformaten](#bestandsformaten)
 - [Tijdzone gedrag](#tijdzone-gedrag)
 - [Historische gegevens](#historische-gegevens)
@@ -242,6 +243,26 @@ Het type energiedrager of -mix.
 | `55` | LocalDistributionCompaniesCombination | Consumptie |
 | `56` | AllConsumingGas | Consumptie |
 | `59` | Electricityload | Consumptie |
+
+---
+
+### Paginering en sortering
+
+De `/utilizations` endpoint retourneert een gepagineerde collectie.
+
+| Parameter | Standaard | Max | Omschrijving |
+|---|---|---|---|
+| `page` | `1` | — | Paginanummer |
+| `itemsPerPage` | `144` | `200` | Aantal records per pagina |
+| `order[validfrom]` | `desc` | — | Sorteervolgorde: `asc` of `desc` |
+
+> **Tip:** De standaard van 144 items komt overeen met een volledige dag aan 10-minuutdata. Bij uurdata (`granularity=5`) zijn 24 items genoeg voor één dag.
+
+Alle filterparameters (`point`, `type`, `activity`, `classification`, `granularity`, `granularitytimezone`) accepteren ook een **array-syntax** voor meerdere waarden tegelijk:
+
+```
+?point[]=0&point[]=8&type[]=1&type[]=2
+```
 
 ---
 

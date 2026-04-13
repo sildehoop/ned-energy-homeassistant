@@ -45,7 +45,7 @@ class NedSensorEntityDescription(SensorEntityDescription):
 
 # ---------------------------------------------------------------------------
 # Sensor catalogue
-# All energy values are in MWh (hourly granularity from the NED API).
+# All energy values are in kWh — the API's `volume` field (kWh per interval).
 # ---------------------------------------------------------------------------
 
 SENSOR_DESCRIPTIONS: tuple[NedSensorEntityDescription, ...] = (
