@@ -89,12 +89,28 @@ class NedEnergyApiClient:
     # ------------------------------------------------------------------
 
     async def async_validate_auth(self) -> bool:
-        """Return True if the API key is accepted by the NED API.
+        """Return True if the API key can access the /utilizations endpoint.
 
-        Uses the /activities endpoint (always accessible) to verify the key
-        rather than /utilizations which may return 403 based on subscription.
+        Tests the same endpoint used by the coordinator so that subscription-level
+        403 errors (key valid but no data access) are caught during config flow
+        validation instead of silently passing and failing on first refresh.
         """
-        url = f"{API_BASE_URL}/activities"
+        now = datetime.now(tz=UTC)
+        yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
+        current_hour = now.replace(minute=0, second=0, microsecond=0)
+
+        params = {
+            "point": POINT_NETHERLANDS,
+            "type": TYPE_ALL,
+            "activity": ACTIVITY_PROVIDING,
+            "granularity": GRANULARITY_HOUR,
+            "granularitytimezone": GRANULARITY_TIMEZONE,
+            "classification": 2,
+            "validfrom[after]": yesterday,
+            "validfrom[strictly_before]": current_hour.strftime("%Y-%m-%dT%H:%M:%S"),
+            "itemsPerPage": 1,
+            "order[validfrom]": "desc",
+        }
         headers = {
             "X-AUTH-TOKEN": self._api_key,
             "Accept": "application/ld+json",
@@ -102,7 +118,10 @@ class NedEnergyApiClient:
         }
         try:
             async with self._session.get(
-                url, headers=headers, timeout=_REQUEST_TIMEOUT
+                f"{API_BASE_URL}/utilizations",
+                params=params,
+                headers=headers,
+                timeout=_REQUEST_TIMEOUT,
             ) as response:
                 if response.status in (401, 403):
                     return False
@@ -190,6 +209,10 @@ class NedEnergyApiClient:
                 volume = _latest_volume(members)
                 LOGGER.debug("NED [%s] = %s MWh", sensor_key, volume)
                 return sensor_key, volume
+            except NedAuthError:
+                # Re-raise so the coordinator receives ConfigEntryAuthFailed
+                # and HA shows the re-authentication notification in the UI.
+                raise
             except NedApiError as err:
                 LOGGER.warning("Failed to fetch '%s': %s", sensor_key, err)
                 return sensor_key, None
@@ -221,7 +244,9 @@ class NedEnergyApiClient:
             "granularitytimezone": GRANULARITY_TIMEZONE,
             "classification": 2,  # actual data, not forecast
             "validfrom[after]": yesterday,
-            "validfrom[strictly_before]": current_hour.isoformat(),
+            # Timezone offset omitted: granularitytimezone=0 already declares UTC,
+            # and the `+` in isoformat() can cause URL-encoding issues with some proxies.
+            "validfrom[strictly_before]": current_hour.strftime("%Y-%m-%dT%H:%M:%S"),
             "itemsPerPage": items_per_page,
             "order[validfrom]": "desc",
         }
