@@ -123,9 +123,12 @@ class NedEnergyApiClient:
                 headers=headers,
                 timeout=_REQUEST_TIMEOUT,
             ) as response:
+                LOGGER.debug("NED auth validation response: HTTP %s", response.status)
                 if response.status in (401, 403):
                     return False
-                return response.status == 200
+                # Accept any non-auth-failure: 200 = data returned,
+                # 4xx other than 401/403 means the key was accepted by the API.
+                return response.status < 500
         except (TimeoutError, aiohttp.ClientError) as err:
             raise NedConnectionError("Connection error during auth validation") from err
 
