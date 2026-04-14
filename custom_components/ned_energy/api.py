@@ -94,10 +94,12 @@ class NedEnergyApiClient:
         Tests the same endpoint used by the coordinator so that subscription-level
         403 errors (key valid but no data access) are caught during config flow
         validation instead of silently passing and failing on first refresh.
+        Uses date-only format for validfrom filters: the NED API returns 403 for
+        datetime strings on lower subscription tiers.
         """
         now = datetime.now(tz=UTC)
         yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-        current_hour = now.replace(minute=0, second=0, microsecond=0)
+        tomorrow = (now + timedelta(days=1)).strftime("%Y-%m-%d")
 
         params = {
             "point": POINT_NETHERLANDS,
@@ -107,7 +109,7 @@ class NedEnergyApiClient:
             "granularitytimezone": GRANULARITY_TIMEZONE,
             "classification": 2,
             "validfrom[after]": yesterday,
-            "validfrom[strictly_before]": current_hour.strftime("%Y-%m-%dT%H:%M:%S"),
+            "validfrom[strictly_before]": tomorrow,
             "itemsPerPage": 1,
             "order[validfrom]": "desc",
         }
@@ -123,11 +125,8 @@ class NedEnergyApiClient:
                 headers=headers,
                 timeout=_REQUEST_TIMEOUT,
             ) as response:
-                LOGGER.debug("NED auth validation response: HTTP %s", response.status)
                 if response.status in (401, 403):
                     return False
-                # Accept any non-auth-failure: 200 = data returned,
-                # 4xx other than 401/403 means the key was accepted by the API.
                 return response.status < 500
         except (TimeoutError, aiohttp.ClientError) as err:
             raise NedConnectionError("Connection error during auth validation") from err
@@ -228,17 +227,19 @@ class NedEnergyApiClient:
         point: int,
         activity_type: int,
         activity: int,
-        items_per_page: int = 1,
+        items_per_page: int = 2,
     ) -> list[dict[str, Any]]:
-        """Perform a GET /utilizations request and return the member list."""
+        """Perform a GET /utilizations request and return the member list.
+
+        Fetches 2 records by default so that _latest_volume() can skip the
+        current incomplete hour and fall back to the previous completed hour.
+        The NED API returns 403 for datetime strings in validfrom filters on
+        lower subscription tiers, so date-only format is used here; the
+        current-hour exclusion is handled in _latest_volume() instead.
+        """
         now = datetime.now(tz=UTC)
         yesterday = (now - timedelta(days=1)).strftime("%Y-%m-%d")
-        # Exclude the current running hour: near-realtime data is continuously
-        # revised within the hour, causing oscillation if we fetch it mid-hour.
-        # By capping strictly_before at the start of the current hour we always
-        # return the most recent *completed* hour whose value is stable.
-        # UTC is used explicitly so the boundary is correct regardless of DST.
-        current_hour = now.replace(minute=0, second=0, microsecond=0)
+        tomorrow = (now + timedelta(days=1)).strftime("%Y-%m-%d")
         params: dict[str, Any] = {
             "point": point,
             "type": activity_type,
@@ -247,9 +248,9 @@ class NedEnergyApiClient:
             "granularitytimezone": GRANULARITY_TIMEZONE,
             "classification": 2,  # actual data, not forecast
             "validfrom[after]": yesterday,
-            # Timezone offset omitted: granularitytimezone=0 already declares UTC,
-            # and the `+` in isoformat() can cause URL-encoding issues with some proxies.
-            "validfrom[strictly_before]": current_hour.strftime("%Y-%m-%dT%H:%M:%S"),
+            # Date-only format required: datetime strings cause HTTP 403 on
+            # lower NED API subscription tiers.
+            "validfrom[strictly_before]": tomorrow,
             "itemsPerPage": items_per_page,
             "order[validfrom]": "desc",
         }
@@ -300,11 +301,29 @@ class NedEnergyApiClient:
 
 
 def _latest_volume(members: list[dict[str, Any]]) -> float | None:
-    """Return the volume (MWh) from the most recent utilization member."""
-    if not members:
-        return None
-    raw = members[0].get("volume")
-    return float(raw) if raw is not None else None
+    """Return the volume (MWh) from the most recent *completed* utilization member.
+
+    Near-realtime data for the current running hour is continuously revised,
+    causing an oscillating (sawtooth) pattern on sensor history graphs.
+    We skip any member whose validfrom falls within the current UTC hour so
+    that only stable, completed-hour values are returned.
+    """
+    current_hour_utc = datetime.now(tz=UTC).replace(minute=0, second=0, microsecond=0)
+
+    for member in members:
+        validfrom_str = member.get("validfrom")
+        if validfrom_str:
+            try:
+                vf = datetime.fromisoformat(validfrom_str)
+                if vf.utcoffset() is None:
+                    vf = vf.replace(tzinfo=UTC)
+                if vf >= current_hour_utc:
+                    continue  # skip incomplete current hour
+            except (ValueError, TypeError):
+                pass
+        raw = member.get("volume")
+        return float(raw) if raw is not None else None
+    return None
 
 
 def _calc_renewable_pct(data: dict[str, Any]) -> float | None:
