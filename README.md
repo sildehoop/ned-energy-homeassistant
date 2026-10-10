@@ -27,6 +27,7 @@ The NED Energy integration connects Home Assistant to `api.ned.nl`, the official
 - **Re-authentication flow** — Home Assistant notifies you when an API key expires; re-enter a new key without losing any configuration
 - **Graceful degradation** — sensors become `unavailable` on API errors instead of showing stale data
 - **Single config entry** — the UI prevents duplicate setup
+- **NED icon and logo** — bundled brand images, shown in the Home Assistant UI (2026.3+)
 
 ---
 
@@ -51,6 +52,7 @@ The NED Energy integration connects Home Assistant to `api.ned.nl`, the official
    config/
    └── custom_components/
        └── ned_energy/
+           ├── brand/
            ├── __init__.py
            ├── api.py
            ├── config_flow.py
@@ -189,6 +191,7 @@ tests/
 
 ```
 custom_components/ned_energy/
+├── brand/            # Integration icon and logo (shown in HA 2026.3+)
 ├── __init__.py       # Integration setup and teardown
 ├── api.py            # Async NED API client (aiohttp)
 ├── config_flow.py    # UI config flow + options flow
